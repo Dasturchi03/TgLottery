@@ -9,6 +9,7 @@ from utils.keyboards import channel_kb, dice_kb, bonus_menu, pnmvpn_trial_kb
 from utils.verification import has_deposit
 from config import redis, PNMVPN_BOT_USERNAME
 from utils.bonus_content import bonus_page_caption, referral_caption
+from utils.daily_case_storage import get_extra_dice_attempts
 
 
 bonus_router = Router()
@@ -82,6 +83,12 @@ async def _attempts_used_today(game: str, user_id: int) -> tuple[str, int]:
     return key, used
 
 
+async def _effective_attempt_limit(game: str, user_id: int, daily_attempts: int) -> int:
+    if game != 'dice':
+        return daily_attempts
+    return daily_attempts + await get_extra_dice_attempts(redis, user_id)
+
+
 async def _play_game(
     callback: CallbackQuery,
     *,
@@ -103,15 +110,16 @@ async def _play_game(
     if daily_attempts <= 0:
         return await callback.answer("🎮 Игра временно недоступна (K=0).", show_alert=True)
 
+    attempt_limit = await _effective_attempt_limit(game, callback.from_user.id, daily_attempts)
     key, used = await _attempts_used_today(game, callback.from_user.id)
-    if used >= daily_attempts:
+    if used >= attempt_limit:
         return await callback.answer("❌ Попытки на сегодня закончились. Приходите завтра.", show_alert=True)
 
     used_after = await redis.incr(key)
     if used_after == 1:
         await redis.expire(key, _seconds_until_tomorrow())
 
-    remaining = max(0, daily_attempts - int(used_after))
+    remaining = max(0, attempt_limit - int(used_after))
     await callback.answer()
 
     msg = await callback.message.answer_dice(emoji=emoji.split()[0])
@@ -155,15 +163,16 @@ async def _play_two_dice_double_game(
     if daily_attempts <= 0:
         return await callback.answer("🎲 Игра временно недоступна (K=0).", show_alert=True)
 
+    attempt_limit = await _effective_attempt_limit(game, callback.from_user.id, daily_attempts)
     key, used = await _attempts_used_today(game, callback.from_user.id)
-    if used >= daily_attempts:
+    if used >= attempt_limit:
         return await callback.answer("❌ Попытки на сегодня закончились. Приходите завтра.", show_alert=True)
 
     used_after = await redis.incr(key)
     if used_after == 1:
         await redis.expire(key, _seconds_until_tomorrow())
 
-    remaining = max(0, daily_attempts - int(used_after))
+    remaining = max(0, attempt_limit - int(used_after))
     await callback.answer()
 
     msg1 = await callback.message.answer_dice(emoji=emoji.split()[0])

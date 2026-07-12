@@ -43,6 +43,10 @@ class Users(Model):
     trial_bonus_claimed = BooleanField(default=False)
     trial_bonus_claimed_at = DateTimeField(null=True)
 
+    daily_case_opened_at = DateTimeField(null=True)
+    daily_case_notification_claimed_at = DateTimeField(null=True)
+    daily_case_notification_sent_at = DateTimeField(null=True)
+
     class Meta:
         database = db
 
@@ -71,18 +75,37 @@ class Settings(Model):
         database = db
 
 
-def _ensure_schema():
-    users_columns = {column.name for column in db.get_columns(Users._meta.table_name)}
-    settings_columns = {column.name for column in db.get_columns(Settings._meta.table_name)}
+def _ensure_schema(database=None):
+    database = database or db
+    users_columns = {column.name for column in database.get_columns(Users._meta.table_name)}
+    settings_columns = {column.name for column in database.get_columns(Settings._meta.table_name)}
 
     if "inactive" not in users_columns:
-        db.execute_sql(
+        database.execute_sql(
             f'ALTER TABLE "{Users._meta.table_name}" '
             'ADD COLUMN "inactive" INTEGER NOT NULL DEFAULT 0'
         )
 
+    if "daily_case_opened_at" not in users_columns:
+        database.execute_sql(
+            f'ALTER TABLE "{Users._meta.table_name}" '
+            'ADD COLUMN "daily_case_opened_at" DATETIME'
+        )
+
+    if "daily_case_notification_sent_at" not in users_columns:
+        database.execute_sql(
+            f'ALTER TABLE "{Users._meta.table_name}" '
+            'ADD COLUMN "daily_case_notification_sent_at" DATETIME'
+        )
+
+    if "daily_case_notification_claimed_at" not in users_columns:
+        database.execute_sql(
+            f'ALTER TABLE "{Users._meta.table_name}" '
+            'ADD COLUMN "daily_case_notification_claimed_at" DATETIME'
+        )
+
     if "pnmvpn_trial_reward" not in settings_columns:
-        db.execute_sql(
+        database.execute_sql(
             f'ALTER TABLE "{Settings._meta.table_name}" '
             'ADD COLUMN "pnmvpn_trial_reward" INTEGER NOT NULL DEFAULT 1'
         )

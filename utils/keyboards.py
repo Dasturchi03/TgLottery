@@ -2,19 +2,29 @@ from aiogram.utils.keyboard import (InlineKeyboardBuilder, InlineKeyboardButton,
                                     ReplyKeyboardBuilder, KeyboardButton)
 from config import ADMINS
 from utils.models import BigRuffleSettings, Settings
+from utils.models import Users
+from utils.daily_case import daily_case_button_text
 
 
 def main_menu(user_id):
     bl_settings: BigRuffleSettings = BigRuffleSettings.get()
+    user = Users.get_or_none(Users.user_id == user_id)
     builder = ReplyKeyboardBuilder()
-    builder.row(KeyboardButton(text='🙎🏻‍♂️ Профиль'), KeyboardButton(text='🎁 Бонусы'))
-    builder.row(KeyboardButton(text='🎟️ Моментальный розыгрыш'),
-                KeyboardButton(text='🎫 Мои розыгрыши'))
+    builder.row(KeyboardButton(text=daily_case_button_text(user.daily_case_opened_at if user else None)))
+    builder.row(KeyboardButton(text='👤 Профиль'), KeyboardButton(text='💎 Бонусы'))
+    builder.row(KeyboardButton(text='🎟 Присоединиться'),
+                KeyboardButton(text='🎫 Мои слоты'))
     if bl_settings.activity:
         builder.row(KeyboardButton(text='🎫 Мешок денег'))
     if user_id in ADMINS:
         builder.row(KeyboardButton(text='👑 Админ-панель'))
     return builder.as_markup(resize_keyboard=True)
+
+
+def daily_case_notification_kb():
+    builder = InlineKeyboardBuilder()
+    builder.button(text='🔓 Открыть кейс', callback_data='daily_case_open')
+    return builder.as_markup()
 
 
 def profile_menu():

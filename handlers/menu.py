@@ -10,7 +10,7 @@ from utils.bonus_content import bonus_page_caption
 menu_router = Router()
 
 
-@menu_router.message(F.text == '🙎🏻‍♂️ Профиль')
+@menu_router.message(F.text.in_({'🙎🏻‍♂️ Профиль', '👤 Профиль'}))
 async def profile_handler(message: Message, state: FSMContext):
     await state.clear()
     user = Users.get_or_none(Users.user_id == message.from_user.id)
@@ -29,7 +29,7 @@ async def profile_handler(message: Message, state: FSMContext):
                              'вернуться в главное меню')
 
 
-@menu_router.message(F.text == '🎟️ Моментальный розыгрыш')
+@menu_router.message(F.text.in_({'🎟️ Моментальный розыгрыш', '🎟 Присоединиться'}))
 async def momentum_ruffle_handle(message: Message, state: FSMContext):
     await state.clear()
     user = Users.get_or_none(Users.user_id == message.from_user.id)
@@ -65,7 +65,7 @@ async def big_ruffle_handle(message: Message, state: FSMContext):
                              reply_markup=main_menu(message.from_user.id))
 
 
-@menu_router.message(F.text == '🎁 Бонусы')
+@menu_router.message(F.text.in_({'🎁 Бонусы', '💎 Бонусы'}))
 async def bonuses_handler(message: Message, state: FSMContext):
     await state.clear()
     await message.answer_photo(photo='AgACAgIAAxkBAAJqUmmkCVO4yemYBj_89Z3bR4M6DIl3AALNGWsbh1oQSbsELUsoe8v6AQADAgADeQADOgQ',
@@ -74,7 +74,7 @@ async def bonuses_handler(message: Message, state: FSMContext):
                          parse_mode='HTML')
 
 
-@menu_router.message(F.text == '🎫 Мои розыгрыши')
+@menu_router.message(F.text.in_({'🎫 Мои розыгрыши', '🎫 Мои слоты'}))
 async def my_ruffles(message: Message):
     my_tickets = {}
     for i in Tickets.select().where(Tickets.user_id == message.from_user.id):
