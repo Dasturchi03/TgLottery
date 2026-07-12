@@ -1,0 +1,75 @@
+services:
+  bot:
+    image: business_bot:latest
+    build: ./
+    command: sh -c "python main.py"
+    env_file:
+      - .env
+    volumes:
+      - .:/code
+    restart: always
+    networks:
+      - public
+      - backend
+
+  web:
+    image: business_bot:latest
+    build: ./
+    command: >
+      sh -c "uvicorn crypto_webhook:app 
+      --host 0.0.0.0 
+      --port ${WEBHOOK_PORT:-443} 
+      --ssl-keyfile ${WEBHOOK_KEY_FILE:-bot_key.pem} 
+      --ssl-certfile ${WEBHOOK_CERT_FILE:-bot_cert.pem} 
+      --workers 1"
+    env_file:
+      - .env
+    ports:
+      - "${WEBHOOK_PORT:-443}:${WEBHOOK_PORT:-443}"
+    volumes:
+      - .:/code
+    restart: always
+    healthcheck:
+      test: ["CMD", "python", "-c", "import ssl, urllib.request; urllib.request.urlopen('https://localhost:${WEBHOOK_PORT:-443}/health', context=ssl._create_unverified_context(), timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - public
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    environment:
+      REDIS_USER: ${REDIS_USER}
+      REDIS_USER_PASSWORD: ${REDIS_USER_PASSWORD}
+    volumes:
+      - ./redisdata:/data
+    networks:
+      - backend
+    command: >
+      sh -c '
+        mkdir -p /usr/local/etc/redis &&
+        echo "bind 0.0.0.0" > /usr/local/etc/redis/redis.conf &&
+        echo "protected-mode yes" >> /usr/local/etc/redis/redis.conf &&
+        echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
+        echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
+        echo "user default off" > /usr/local/etc/redis/users.acl &&
+        echo "user ${REDIS_USER} on >${REDIS_USER_PASSWORD} ~* +@all" >> /usr/local/etc/redis/users.acl &&
+        redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
+      '
+    healthcheck:
+      test: ["CMD", "redis-cli", "-u", "redis://${REDIS_USER}:${REDIS_USER_PASSWORD}@localhost:6379", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+networks:
+  public:
+    driver: bridge
+
+  backend:
+    driver: bridge
+    internal: true

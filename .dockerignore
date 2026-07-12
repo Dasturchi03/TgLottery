@@ -1,0 +1,9 @@
+.env
+.git
+.agents
+venv
+__pycache__
+*.pyc
+database.db*
+redisdata
+bot_key.pem

@@ -1,0 +1,10 @@
+.env
+*.pem
+database.db
+database.db-shm
+database.db-wal
+redisdata/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
