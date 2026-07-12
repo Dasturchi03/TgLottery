@@ -18,14 +18,12 @@ services:
     command: >
       sh -c "uvicorn crypto_webhook:app 
       --host 0.0.0.0 
-      --port ${WEBHOOK_PORT:-443} 
-      --ssl-keyfile ${WEBHOOK_KEY_FILE:-bot_key.pem} 
-      --ssl-certfile ${WEBHOOK_CERT_FILE:-bot_cert.pem} 
+      --port 8000
       --workers 1"
     env_file:
       - .env
     ports:
-      - "${WEBHOOK_PORT:-443}:${WEBHOOK_PORT:-443}"
+      - "127.0.0.1:8443:8000"
     volumes:
       - .:/code
     restart: always
