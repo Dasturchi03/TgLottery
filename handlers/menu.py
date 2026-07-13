@@ -29,7 +29,7 @@ async def profile_handler(message: Message, state: FSMContext):
                              'вернуться в главное меню')
 
 
-@menu_router.message(F.text.in_({'🎟️ Моментальный розыгрыш', '🎟 Присоединиться'}))
+@menu_router.message(F.text.in_({'🎟️ Моментальный розыгрыш', '🎟 Занять слот'}))
 async def momentum_ruffle_handle(message: Message, state: FSMContext):
     await state.clear()
     user = Users.get_or_none(Users.user_id == message.from_user.id)
