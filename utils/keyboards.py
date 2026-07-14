@@ -41,7 +41,7 @@ def bonus_menu():
     builder.button(text='👉 Подписаться на канал', callback_data='follow_channel')
     builder.row(InlineKeyboardButton(text=f'💎 {settings.cost_invite} за друга', callback_data='invite_friend'),
                 InlineKeyboardButton(text='🎳 Боулинг ', callback_data='bowling_game'))
-    builder.row(InlineKeyboardButton(text=f'{settings.pnmvpn_trial_reward} {DISPLAY_CURRENCY} за 1 {DISPLAY_CURRENCY}', callback_data='pnmvpn_trial'),
+    builder.row(InlineKeyboardButton(text=f'💎 {settings.pnmvpn_trial_reward} за ₽1', callback_data='pnmvpn_trial'),
                 InlineKeyboardButton(text='🎯 Дартс ', callback_data='darts_game'))
     builder.row(InlineKeyboardButton(text='🎲 Игра в кости', callback_data='dice_game'),
                 InlineKeyboardButton(text='🎰 777 ', callback_data='casino_game'))
@@ -98,7 +98,7 @@ def admin_kb():
 def edit_ruffles(ruffles):
     builder = InlineKeyboardBuilder()
     for i in ruffles:
-        builder.button(text=f'{i.name} [{i.price} {DISPLAY_CURRENCY}]', callback_data=f'admin ruffle {i.id}')
+        builder.button(text=f'{i.name} [{i.price} USDt]', callback_data=f'admin ruffle {i.id}')
     builder.button(text='➕ Добавить', callback_data='admin add ruffle')
     builder.button(text='↩️ Назад', callback_data='admin_panel')
     return builder.adjust(2).as_markup()
