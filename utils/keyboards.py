@@ -39,7 +39,7 @@ def bonus_menu():
     settings = Settings.get()
     builder = InlineKeyboardBuilder()
     builder.button(text='👉 Подписаться на канал', callback_data='follow_channel')
-    builder.row(InlineKeyboardButton(text=f'{settings.cost_invite} 💎 за друга', callback_data='invite_friend'),
+    builder.row(InlineKeyboardButton(text=f'💎 {settings.cost_invite} за друга', callback_data='invite_friend'),
                 InlineKeyboardButton(text='🎳 Боулинг ', callback_data='bowling_game'))
     builder.row(InlineKeyboardButton(text=f'💎 {settings.pnmvpn_trial_reward} за ₽1', callback_data='pnmvpn_trial'),
                 InlineKeyboardButton(text='🎯 Дартс ', callback_data='darts_game'))
