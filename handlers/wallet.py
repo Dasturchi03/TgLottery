@@ -81,8 +81,9 @@ async def wallet_withdraw(callback: CallbackQuery, state: FSMContext):
             f'❌ Вы не можете обменять средства!\nДля обмена необходимо занять хотя бы 1 слот после пополнения баланса',
             show_alert=True)
     settings = Settings.get()
-    await callback.message.edit_caption(caption=f'‼️ Внимание ‼️ Для вывода должен быть создан крипто-кошелек, иначе средства пропадут безвозвратно.\n'
-                                     f'📝 Укажите все необходимые детали для вывода средств на ваш крипто-кошелёк.\n'
+    await callback.message.edit_caption(caption=f'‼️ Внимание ‼️ Для вывода должен быть создан крипто-кошелек, иначе средства пропадут безвозвратно.\n\n'
+                                     f'1 💎 = 1 USDt\n\n'
+                                     f'📝 Укажите все необходимые детали для вывода средств на ваш крипто-кошелёк.\n\n'
                                      f'💸 Минимальный обмен: {settings.min_withdraw_balance} {DISPLAY_CURRENCY}\n'
                                      f'💵 Введите количество {DISPLAY_CURRENCY} на обмен:\n\n'
                                      f'💳 <i>*Минимальная сумма для вывода: {settings.min_withdraw_balance} {DISPLAY_CURRENCY}</i>',
