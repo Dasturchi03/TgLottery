@@ -1,6 +1,6 @@
 from aiogram.utils.keyboard import (InlineKeyboardBuilder, InlineKeyboardButton,
                                     ReplyKeyboardBuilder, KeyboardButton)
-from config import ADMINS
+from config import ADMINS, DISPLAY_CURRENCY
 from utils.models import BigRuffleSettings, Settings
 from utils.models import Users
 from utils.daily_case import daily_case_button_text
@@ -29,9 +29,9 @@ def daily_case_notification_kb():
 
 def profile_menu():
     builder = InlineKeyboardBuilder()
-    builder.row(InlineKeyboardButton(text='📥 Пополнить', callback_data='wallet topup'),
-                InlineKeyboardButton(text='📤 Вывести', callback_data='wallet withdraw'))
-    builder.row(InlineKeyboardButton(text='❓ Как пополнить баланс?', callback_data='faq_topup'))
+    builder.row(InlineKeyboardButton(text='💎 Купить', callback_data='wallet topup'),
+                InlineKeyboardButton(text='🔄 Обменять', callback_data='wallet withdraw'))
+    builder.row(InlineKeyboardButton(text='❓ Инструкция', callback_data='faq_topup'))
     return builder.as_markup()
 
 
@@ -41,7 +41,7 @@ def bonus_menu():
     builder.button(text='👉 Подписаться на канал', callback_data='follow_channel')
     builder.row(InlineKeyboardButton(text=f'💎 {settings.cost_invite} за друга', callback_data='invite_friend'),
                 InlineKeyboardButton(text='🎳 Боулинг ', callback_data='bowling_game'))
-    builder.row(InlineKeyboardButton(text=f'💎 {settings.pnmvpn_trial_reward} за ₽1', callback_data='pnmvpn_trial'),
+    builder.row(InlineKeyboardButton(text=f'{settings.pnmvpn_trial_reward} {DISPLAY_CURRENCY} за 1 {DISPLAY_CURRENCY}', callback_data='pnmvpn_trial'),
                 InlineKeyboardButton(text='🎯 Дартс ', callback_data='darts_game'))
     builder.row(InlineKeyboardButton(text='🎲 Игра в кости', callback_data='dice_game'),
                 InlineKeyboardButton(text='🎰 777 ', callback_data='casino_game'))
@@ -72,7 +72,7 @@ def dice_kb(emoji: str, call_data: str):
 def momentum_ruffle(ruffles):
     builder = InlineKeyboardBuilder()
     for i in ruffles:
-        builder.button(text=f'{i.name} [{i.price} USDt]', callback_data=f'ruffle {i.id}')
+        builder.button(text=f'{i.name} [{i.price} {DISPLAY_CURRENCY}]', callback_data=f'ruffle {i.id}')
     return builder.adjust(1).as_markup()
 
 
@@ -98,7 +98,7 @@ def admin_kb():
 def edit_ruffles(ruffles):
     builder = InlineKeyboardBuilder()
     for i in ruffles:
-        builder.button(text=f'{i.name} [{i.price} USDt]', callback_data=f'admin ruffle {i.id}')
+        builder.button(text=f'{i.name} [{i.price} {DISPLAY_CURRENCY}]', callback_data=f'admin ruffle {i.id}')
     builder.button(text='➕ Добавить', callback_data='admin add ruffle')
     builder.button(text='↩️ Назад', callback_data='admin_panel')
     return builder.adjust(2).as_markup()

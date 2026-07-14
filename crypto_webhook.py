@@ -3,7 +3,7 @@ import hashlib
 from datetime import datetime, timezone
 from fastapi import FastAPI, Request, status, HTTPException, Header
 from pydantic import BaseModel, Field
-from config import bot, CRYPTOBOT_TOKEN, CRYPTO_WEBHOOK_SECRET, ADMINS
+from config import bot, CRYPTOBOT_TOKEN, CRYPTO_WEBHOOK_SECRET, ADMINS, DISPLAY_CURRENCY
 from utils.models import Users, Payments, Settings, init_db, db
 from cryptobot import Invoice
 from config import PNMVPN_HMAC_SECRET
@@ -51,15 +51,15 @@ async def root(
         for admin in ADMINS:
             await bot.send_message(int(admin),
                                    f'❌ Пришел неопознанный платеж под номером #{order_id}\n'
-                                   f'Сумма: {invoice.amount} USDt\n'
+                                   f'Сумма: {invoice.amount} {DISPLAY_CURRENCY}\n'
                                    f'error: {e}')
         return status.HTTP_402_PAYMENT_REQUIRED
     if float(payment.amount) != float(invoice.amount):
         for admin in ADMINS:
             await bot.send_message(int(admin),
                                    f'❌ Пришел опознанный платеж под номером #{order_id} с другой суммой\n'
-                                   f'Сумма: {payment.amount} USDt\n'
-                                   f'Сумма списания: {invoice.amount} USDt\n')
+                                   f'Сумма: {payment.amount} {DISPLAY_CURRENCY}\n'
+                                   f'Сумма списания: {invoice.amount} {DISPLAY_CURRENCY}\n')
         return status.HTTP_402_PAYMENT_REQUIRED
     referral_notification = None
     with db.atomic():
@@ -99,7 +99,7 @@ async def root(
             print(f'Unable to notify referral reward: {error}')
 
     try:
-        await bot.edit_message_text(text=f'✅ Платёж успешно выполнен! Ваш баланс пополнен на: {payment.amount} USDt',
+        await bot.edit_message_text(text=f'✅ Платёж успешно выполнен! Ваш баланс пополнен на: {payment.amount} {DISPLAY_CURRENCY}',
                                     chat_id=payment.user_id,
                                     message_id=payment.message_id)
     except Exception as error:
@@ -111,7 +111,7 @@ async def root(
 🆔 Номер заказа: {payment.id}
 🪪 Логин: {user.username}
 #️⃣ Telegram ID: {user.user_id}
-💰 Сумма: {payment.amount} USDt [{invoice.amount} USDt]''')
+💰 Сумма: {payment.amount} {DISPLAY_CURRENCY} [{invoice.amount} {DISPLAY_CURRENCY}]''')
     except Exception as error:
         print(f'Unable to notify admins about payment #{payment.id}: {error}')
     return status.HTTP_200_OK

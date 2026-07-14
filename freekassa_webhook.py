@@ -4,7 +4,7 @@ import hmac
 from fastapi import Request, Query, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from typing import Dict
-from config import bot, FREEKASSA_MERCHANT_ID, FREEKASSA_SECRET_WORD_2
+from config import bot, FREEKASSA_MERCHANT_ID, FREEKASSA_SECRET_WORD_2, DISPLAY_CURRENCY
 from utils.models import Payments, Users, Settings, db, init_db
 
 app = FastAPI()
@@ -72,7 +72,7 @@ async def payment_handler(request: Request,
             print(f'Unable to notify referral reward: {e}')
     try:
         await bot.delete_message(payment.user_id, payment.message_id)
-        await bot.send_message(payment.user_id, f"✅ Ваш баланс пополнен на {payment.amount} USDt")
+        await bot.send_message(payment.user_id, f"✅ Ваш баланс пополнен на {payment.amount} {DISPLAY_CURRENCY}")
     except Exception as e:
         print(f'Unable to notify payment user: {e}')
     return HTMLResponse('YES')

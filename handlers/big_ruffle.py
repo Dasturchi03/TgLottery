@@ -5,6 +5,7 @@ from utils.models import Users, Tickets, BigRuffleSettings
 from utils.keyboards import next_kb
 from utils.playout import start_ruffle
 from utils.verification import has_deposit
+from config import DISPLAY_CURRENCY
 
 
 big_ruffle_router = Router()
@@ -14,7 +15,7 @@ big_ruffle_router = Router()
 async def big_ruffle_handle(callback: CallbackQuery):
     settings: BigRuffleSettings = BigRuffleSettings.get()
     await callback.message.edit_text(
-        f'''⚠️ Вы уверены что хотите купить билет? Стоимость {settings.price} USDt спишется с Вашего баланса в профиле''',
+        f'''⚠️ Вы уверены что хотите занять слот? Стоимость {settings.price} {DISPLAY_CURRENCY} спишется с Вашего баланса в профиле''',
         reply_markup=next_kb(f'big_ruffle buy'))
 
 
@@ -27,7 +28,7 @@ async def big_ruffle_handle(callback: CallbackQuery):
         show_amount = big_ruffle.fake_amount
     else:
         show_amount = amount - (amount * big_ruffle.profit / 100)
-    await callback.answer(f'👀 Сумма в мешке: {show_amount} USDt')
+    await callback.answer(f'👀 Сумма в мешке: {show_amount} {DISPLAY_CURRENCY}')
 
 
 @big_ruffle_router.callback_query(F.data == 'big_ruffle buy')
@@ -56,8 +57,8 @@ async def buy_big_ruffle_handle(callback: CallbackQuery):
         user.balance -= ruffle.price
         Tickets.create(user_id=callback.from_user.id, ruffle_id=ruffle_id)
         await callback.message.edit_text(
-            f'✅ Вы купили билет в лотерее «Мешок денег» за {ruffle.price} USDt. Розыгрыш начнется {ruffle.datetime}\n'
-            f' - Билетов куплено - {len(user_tickets) + 1} шт.\n'
+            f'✅ Вы заняли слот в событии «Мешок денег» за {ruffle.price} {DISPLAY_CURRENCY}. Розыгрыш начнется {ruffle.datetime}\n'
+            f' - Слотов занято - {len(user_tickets) + 1} шт.\n'
         )
         user.can_withdraw_money = True
         user.save()

@@ -11,7 +11,7 @@ from utils.keyboards import (edit_ruffles, ruffle_type_kb, back_button, admin_ed
                              admin_bl_settings_kb, next_kb, admin_bonuses, main_menu, url_buttons_kb)
 from utils.states import Admin
 from utils.playout import start_big_ruffle
-from config import scheduler
+from config import DISPLAY_CURRENCY, scheduler
 from utils.bonus_operations import credit_bonus, credit_bonus_to_user
 
 admin_router = Router()
@@ -146,7 +146,7 @@ async def admin_set_ruffle_type(callback: CallbackQuery, state: FSMContext):
 🎟 Название: {name}
 🏷 Тип: {type_label}
 
-⚙️ По умолчанию установлены данные: цена - 100, максимум билетов для одного пользователя - 5, максимум билетов - 20
+⚙️ По умолчанию установлены данные: цена - 100, максимум слотов для одного пользователя - 5, максимум слотов - 20
 ✏️ Чтобы их изменить, вернитесь к списку розыгрышей, выберите его и совершите необходимые действия''',
         reply_markup=back_button('admin lottery', '🎰 Вернуться к розыгрышам')
     )
@@ -158,9 +158,9 @@ async def admin_edit_ruffle(callback: CallbackQuery, state: FSMContext):
     ruffle = RufflesSettings.get_by_id(int(callback.data.split()[2]))
     text = f'''🎟️ Название: {ruffle.name}
 🔄 Активность: {'🟢 Включен' if ruffle.active else '🔴 Выключен'}
-💵 Цена: {ruffle.price} USDt
-🔼 Максимум билетов для пользователя: {ruffle.mfo} шт.
-🔼 Максимум билетов для розыгрыша: {ruffle.mfa} шт.
+💵 Цена: {ruffle.price} {DISPLAY_CURRENCY}
+🔼 Максимум слотов для пользователя: {ruffle.mfo} шт.
+🔼 Максимум слотов для розыгрыша: {ruffle.mfa} шт.
 ⚖️ Коэффициент выиграша: x{ruffle.ratio}'''
     await callback.message.edit_text(text, reply_markup=admin_edit_ruffle_kb(ruffle.id))
 
@@ -235,8 +235,8 @@ async def admin_settings(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(f'''⚙️ Настройки
 
 📩 Сумма за приглашенного друга: {settings.cost_invite} 💎
-📥 Минимальная сумма для пополнения: {settings.min_topup_balance} USDt
-📤 Минимальная сумма для вывода: {settings.min_withdraw_balance} USDt
+📥 Минимальная сумма для пополнения: {settings.min_topup_balance} {DISPLAY_CURRENCY}
+📤 Минимальная сумма для вывода: {settings.min_withdraw_balance} {DISPLAY_CURRENCY}
 🚀 Бонус за подписку на канал: {settings.prize_follow} 💎
 💎 Бонус pnmVPN trial: {settings.pnmvpn_trial_reward} 💎
 
@@ -450,7 +450,7 @@ async def admin_take_username(message: Message, state: FSMContext):
 
 👤 Имя: {first_name} [{_user_label(user)}]
 🆔 TG ID: {user.user_id}
-💰 Баланс: {user.balance} USDt
+💰 Баланс: {user.balance} {DISPLAY_CURRENCY}
 🎁 Бонусный счет: {user.prize_balance} 💎
 
 📝 Вы уверены что хотите выдать данному пользователю бонус в размере {data["bonus_amount"]} 💎?''',
@@ -534,7 +534,7 @@ async def admin_remove_bonus_username(message: Message, state: FSMContext):
 
 👤 Имя: {bot_user.first_name} [{_user_label(user)}]
 🆔 TG ID: {user.user_id}
-💰 Баланс: {user.balance} USDt
+💰 Баланс: {user.balance} {DISPLAY_CURRENCY}
 🎁 Бонусный счет: {user.prize_balance} 💎
 
 💵 Введите сумму бонусов, которую хотите снять:''',

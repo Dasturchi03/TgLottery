@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from utils.keyboards import profile_menu, momentum_ruffle, big_ruffle, admin_kb, bonus_menu, main_menu
 from utils.models import Users, Settings, RufflesSettings, Tickets, BigRuffleSettings
 from filters.admin import IsAdmin
-from config import crypto
+from config import DISPLAY_CURRENCY, crypto
 from utils.bonus_content import bonus_page_caption
 
 menu_router = Router()
@@ -18,12 +18,12 @@ async def profile_handler(message: Message, state: FSMContext):
         tickets = [i for i in Tickets.select().where(Tickets.user_id == message.from_user.id)]
         await message.answer_photo(photo='AgACAgIAAxkBAAJqWGmkCWhVje9p6H6v3R7v2astPVJvAALLGWsbh1oQSTyvnrosziZ_AQADAgADeQADOgQ',
                                    caption=f'''👤 {message.from_user.full_name}
-🎟 Билетов куплено: {len(tickets)} шт
-🤑 Всего получено призовых денег: {user.prize_money} USDt
-📈 Заработано на рефералах: {user.ref_money} 💎
+🎫 Слотов куплено: {len(tickets)}
+🏆 Всего получено наград: {user.prize_money} {DISPLAY_CURRENCY}
+📈 Бонусы за друзей: {user.ref_money} {DISPLAY_CURRENCY}
 
-💰 Ваш баланс: {user.balance} USDt
-🎁 Бонус-баланс: {user.prize_balance} 💎''', reply_markup=profile_menu())
+💰 Основной баланс: {user.balance} {DISPLAY_CURRENCY}
+🎁 Бонус-баланс: {user.prize_balance} {DISPLAY_CURRENCY}''', reply_markup=profile_menu())
     else:
         await message.answer('⛔ Возникла ошибка, введите /start для того, чтобы '
                              'вернуться в главное меню')
@@ -36,8 +36,8 @@ async def momentum_ruffle_handle(message: Message, state: FSMContext):
     if user:
         ruffles = [ruffle for ruffle in RufflesSettings.select() if ruffle.active]
         await message.answer_photo(photo='AgACAgIAAxkBAAJqVmmkCWMevUml0HZk5rzIn1g8CYeIAALMGWsbh1oQSQ2fXIfmRxmPAQADAgADeQADOgQ',
-                                   caption='''⭐️ Вы перешли в раздел моментальных розыгрышей\n
-🤔 Выберите розыгрыш, в котором хотите участвовать.''',
+                                   caption='''⭐️ Вы перешли в игровой раздел.\n
+🤔 Выберите событие, в котором хотите участвовать.''',
                              reply_markup=momentum_ruffle(ruffles))
     else:
         await message.answer('⛔ Возникла ошибка, введите /start для того, чтобы '
@@ -55,7 +55,7 @@ async def big_ruffle_handle(message: Message, state: FSMContext):
             await message.answer(f'''🎰 Вы перешли в раздел «Мешок денег»
     
 🧐 Здесь выигрыш зависит от количества участников. Больше участников – больше выигрыш! 
-🫵🏻 Ты можешь приобрести неограниченное количество билетов, чем больше, тем выше шанс на победу! 
+🫵🏻 Ты можешь занять неограниченное количество слотов, чем больше, тем выше шанс на победу!
 💸 Победитель будет определён {settings.datetime} Удачи!''', reply_markup=big_ruffle())
         else:
             await message.answer('⛔ Возникла ошибка, введите /start для того, чтобы '
@@ -74,13 +74,13 @@ async def bonuses_handler(message: Message, state: FSMContext):
                          parse_mode='HTML')
 
 
-@menu_router.message(F.text.in_({'🎫 Мои розыгрыши', '🎫 Мои слоты'}))
+@menu_router.message(F.text == '🎫 Мои слоты')
 async def my_ruffles(message: Message):
     my_tickets = {}
     for i in Tickets.select().where(Tickets.user_id == message.from_user.id):
         my_tickets[i.ruffle_id] = my_tickets[i.ruffle_id] + 1 if i.ruffle_id in my_tickets else 1
     if my_tickets:
-        text = '🎫 Мои розыгрыши\nКуплено/Доступно\n'
+        text = '🎫 Мои слоты\n\nКуплено/Доступно\n'
         for i in my_tickets:
             if i:
                 ruffle = RufflesSettings.get_by_id(i)
@@ -90,7 +90,7 @@ async def my_ruffles(message: Message):
         await message.answer_photo(photo='AgACAgIAAxkBAAJqVGmkCV3FFr972p5khZOXHnTvkFaHAALOGWsbh1oQSezvkEvP-o32AQADAgADeQADOgQ',
                                    caption=text)
     else:
-        await message.answer('❌ Вы сейчас не участвуете ни в одном розыгрыше')
+        await message.answer('❌ Вы сейчас не участвуете ни в одном событии')
 
 
 @menu_router.callback_query(IsAdmin(), F.data == 'admin_panel')
@@ -108,12 +108,12 @@ async def admin_panel(message: Message | CallbackQuery, state: FSMContext):
         unique_users = len(set(ticket.user_id for ticket in tickets))
         tickets_count = len(tickets)
         remaining = ruffle.mfa - tickets_count
-        ruffles_info.append(f"\n{ruffle.name} - {unique_users} чел | {tickets_count} шт | Осталось {remaining} билетов\n")
+        ruffles_info.append(f"\n{ruffle.name} - {unique_users} чел | {tickets_count} шт | Осталось {remaining} слотов\n")
     
     text = f'''👑 Вы перешли в административную панель для управления ботом\n
-✏️ Здесь Вы можете отредактировать цены и названия билетов, цену рефералов и прочее
+✏️ Здесь Вы можете отредактировать цены и названия слотов, цену рефералов и прочее
 
-💵 Баланс кошелька: {balance.available} USDt
+💵 Баланс кошелька: {balance.available} {DISPLAY_CURRENCY}
 👥 Активных пользователей: {len(users)}
 🚫 Недоступных пользователей: {inactive_users_count}
 

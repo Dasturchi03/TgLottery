@@ -2,6 +2,7 @@ from aiogram import Bot
 from aiogram.exceptions import TelegramForbiddenError
 from utils.models import Users, Tickets, RufflesSettings, BigRuffleSettings
 from random import choice
+from config import DISPLAY_CURRENCY
 
 
 async def start_ruffle(bot: Bot, ruffle: RufflesSettings):
@@ -15,7 +16,7 @@ async def start_ruffle(bot: Bot, ruffle: RufflesSettings):
     user.save()
     try:
         await bot.send_message(user.user_id,
-                               f'🎉 Вы выиграли {ruffle.price * ruffle.ratio} USDt в лотерее {ruffle.name}')
+                               f'🎉 Вы выиграли {ruffle.price * ruffle.ratio} {DISPLAY_CURRENCY} в событии {ruffle.name}')
     except Exception as e:
         print(e)
     notified = [user.user_id]
@@ -25,7 +26,7 @@ async def start_ruffle(bot: Bot, ruffle: RufflesSettings):
         if i.user_id not in notified:
             try:
                 await bot.send_message(i.user_id, f'🎲 Пользователь @{winner_username.username} выиграл '
-                                                  f'{ruffle.price * ruffle.ratio} USDt в лотерее {ruffle.name} - '
+                                                  f'{ruffle.price * ruffle.ratio} {DISPLAY_CURRENCY} в событии {ruffle.name} - '
                                                   f'Вы ничего не выиграли')
             except Exception as e:
                 print(e)
@@ -48,7 +49,7 @@ async def start_big_ruffle(bot: Bot):
     user.balance += win_amount
     user.save()
     try:
-        await bot.send_message(user.user_id, f'🎉 Вы выиграли {win_amount} USDt в лотерее «Мешок денег»')
+        await bot.send_message(user.user_id, f'🎉 Вы выиграли {win_amount} {DISPLAY_CURRENCY} в событии «Мешок денег»')
     except Exception as e:
         print(e)
     notified = [user.user_id]
@@ -58,7 +59,7 @@ async def start_big_ruffle(bot: Bot):
         if i.user_id not in notified:
             try:
                 await bot.send_message(i.user_id, f'🎲 Пользователь @{winner_username.username} выиграл '
-                                                  f'{win_amount} USDt в лотерее «Мешок денег» - '
+                                                  f'{win_amount} {DISPLAY_CURRENCY} в событии «Мешок денег» - '
                                                   f'Вы ничего не выиграли')
             except Exception as e:
                 print(e)

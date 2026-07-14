@@ -112,10 +112,10 @@ def _ensure_schema(database=None):
 
 
 class RufflesSettings(Model):
-    name = TextField()  # Имя билета
-    price = IntegerField(default=100)  # Цена билета
-    mfo = IntegerField(default=5)  # Максимум билетов для одного пользователя
-    mfa = IntegerField(default=20)  # Максимум билетов для данного типа
+    name = TextField()  # Имя слота
+    price = IntegerField(default=100)  # Цена слота
+    mfo = IntegerField(default=5)  # Максимум слотов для одного пользователя
+    mfa = IntegerField(default=20)  # Максимум слотов для данного типа
     ratio = IntegerField(default=10)  # Коэффициент
     active = BooleanField(default=False)  # активен ли розыгрыш
     ruffle_type = IntegerField(default=0) # 1 - Премиум. 0 - Обычный

@@ -5,6 +5,7 @@ from aiogram.filters.command import Command
 from utils.keyboards import main_menu
 from utils.models import Users
 from aiogram.utils.deep_linking import decode_payload
+from config import DISPLAY_CURRENCY
 
 start_router = Router()
 
@@ -38,21 +39,21 @@ async def start_handler(message: Message, state: FSMContext, bot: Bot, command: 
     if isinstance(message, CallbackQuery):
         message = message.message
     await message.answer_photo(photo="AgACAgIAAxkBAAJqUGmkCUU8WjXxNUWpPGWYk4J9dlULAALPGWsbh1oQSY-01htykltqAQADAgADeQADOgQ",
-                               caption=f'''👋 Привет, {from_user.first_name}! Перед запуском расскажу основные правила:
+                               caption=f'''👋 Привет, {from_user.first_name}! Перед запуском основные правила:
 
-💥 Здесь билеты приобретаются за криптовалюту USDt.
+💥 Доступ в раунды приобретается за игровые очки <b>{DISPLAY_CURRENCY}</b>.
 
-🎫 Бот работает по принципу лотереи: Раскупается тираж -> запускается рандом -> определяется победитель. 
+💰 Получить <b>{DISPLAY_CURRENCY}</b> можно играя в мини-игры, выполняя задания или пополнив баланс.
 
-🎲 Розыгрыш начинается автоматически, как только весь тираж будет выкуплен. 
+🎫 Принцип работы: Заполняются <b>слоты</b> -> запускается <b>рандом</b> -> определяется <b>победитель</b>.
 
-🎟️ Выигрышный билет только один. 
+🎲 <b>Событие</b> начинается автоматически, как только все слоты будут заняты.
 
-📌 Один участник может купить несколько билетов. Больше билетов – больше шансов.
+🎟️ В каждом раунде только один победитель. <b>Награда</b> зачисляется на основной баланс, где её можно обменять по внутреннему курсу <b>1 к 1</b>.
 
-💰 Приглашай друзей, подписывайся на канал и получай бонусы. 
+📌 Один участник может занять несколько слотов в раунде. Больше слотов - выше шанс на главный приз.
 
-🏆 За новостями следите в <a href="https://t.me/TG_Lottery_channel">официальном канале</a>. 
+🏆 За новостями следи в <a href="https://t.me/TG_Lottery_channel">официальном канале</a>.
 
 👉 Если всё понятно – вперёд!''', parse_mode="HTML", reply_markup=main_menu(from_user.id),
                          disable_web_page_preview=True)

@@ -5,6 +5,7 @@ from utils.models import Users, Tickets, RufflesSettings
 from utils.keyboards import next_kb
 from utils.playout import start_ruffle
 from utils.verification import has_deposit
+from config import DISPLAY_CURRENCY
 
 
 ruffle_router = Router()
@@ -18,12 +19,12 @@ async def ruffle_handle(callback: CallbackQuery):
                     where(Tickets.ruffle_id == ruffle_id))
     await callback.message.edit_caption(caption=f'''📑 Условия лотереи
     
-1️⃣ Выигрыш = x{ruffle.ratio} от стоимости одного билета ({ruffle.price * ruffle.ratio} USDt)
-2️⃣ Один участник может купить до {ruffle.mfo} билетов. Больше билетов – больше шансов.
+1️⃣ Выигрыш = x{ruffle.ratio} от стоимости одного слота ({ruffle.price * ruffle.ratio} {DISPLAY_CURRENCY})
+2️⃣ Один участник может занять до {ruffle.mfo} слотов. Больше слотов – больше шансов.
 
-⚠️ Вы уверены что хотите купить билет? Стоимость {ruffle.price} USDt спишется с Вашего баланса в профиле
+⚠️ Вы уверены что хотите занять слот? Стоимость {ruffle.price} {DISPLAY_CURRENCY} спишется с Вашего баланса в профиле
 
-🎟️ Сейчас у Вас билетов данной лотереи: {len(user_tickets)} шт''',
+🎟️ Сейчас у Вас слотов в данном событии: {len(user_tickets)} шт''',
                                      reply_markup=next_kb(f'buy_ruffle {ruffle_id}'))
 
 
@@ -67,12 +68,12 @@ async def buy_ruffle_handle(callback: CallbackQuery):
     # =========================
     if len(user_tickets) >= ruffle.mfo:
         return await callback.message.edit_caption(caption=
-            '❌ Вы уже купили максимально допустимое количество билетов для этой лотереи'
+            '❌ Вы уже заняли максимально допустимое количество слотов для этого события'
         )
 
     if len(tickets) >= ruffle.mfa:
         return await callback.message.edit_caption(caption=
-            '❌ Возникла ошибка при покупке билета, достигнут максимум для этой лотереи, '
+            '❌ Возникла ошибка при занятии слота, достигнут максимум для этого события, '
             'свяжитесь с администратором'
         )
 
@@ -100,9 +101,9 @@ async def buy_ruffle_handle(callback: CallbackQuery):
     Tickets.create(user_id=callback.from_user.id, ruffle_id=ruffle_id)
 
     await callback.message.edit_caption(caption=
-        f'✅ Вы купили билет лотереи {ruffle.name} {ruffle.price} USDt. Розыгрыш начнется, когда все билеты '
+        f'✅ Вы заняли слот в событии {ruffle.name} за {ruffle.price} {DISPLAY_CURRENCY}. Розыгрыш начнется, когда все слоты '
         f'будут распроданы\n'
-        f' - Билетов куплено - {len(user_tickets) + 1} шт.\n'
+        f' - Слотов занято - {len(user_tickets) + 1} шт.\n'
         f' - Вам доступно - {ruffle.mfo - len(user_tickets) - 1} шт.'
     )
 
