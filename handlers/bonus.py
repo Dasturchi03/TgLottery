@@ -15,16 +15,30 @@ from utils.daily_case_storage import get_extra_dice_attempts
 bonus_router = Router()
 
 
+async def _edit_bonus_message(callback: CallbackQuery, text: str, reply_markup=None, parse_mode: str | None = None):
+    if callback.message.caption is not None:
+        return await callback.message.edit_caption(
+            caption=text,
+            reply_markup=reply_markup,
+            parse_mode=parse_mode,
+        )
+    return await callback.message.edit_text(
+        text,
+        reply_markup=reply_markup,
+        parse_mode=parse_mode,
+    )
+
+
 @bonus_router.callback_query(F.data == 'invite_friend')
 async def invite_friend(callback: CallbackQuery):
     user = Users.get_or_none(Users.user_id == callback.from_user.id)
     if user:
         settings = Settings.get()
         link = await create_start_link(callback.bot, str(f'{user.id}-{user.user_id}'), encode=True)
-        await callback.message.edit_caption(caption=referral_caption(link, settings))
+        await _edit_bonus_message(callback, referral_caption(link, settings))
     else:
-        await callback.message.edit_caption(caption='⛔ Возникла ошибка, введите /start для того, чтобы '
-                                         'вернуться в главное меню')
+        await _edit_bonus_message(callback, '⛔ Возникла ошибка, введите /start для того, чтобы '
+                                  'вернуться в главное меню')
 
 
 @bonus_router.callback_query(F.data == 'follow_channel')
@@ -32,8 +46,9 @@ async def follow_channel(callback: CallbackQuery):
     user = Users.get_or_none(Users.user_id == callback.from_user.id)
     if not user.channel_payed:
         settings = Settings.get()
-        await callback.message.edit_caption(
-            caption=f'🌐 Подпишись на канал, нажав на «Подписаться», чтобы получить бонус в размере '
+        await _edit_bonus_message(
+            callback,
+            f'🌐 Подпишись на канал, нажав на «Подписаться», чтобы получить бонус в размере '
             f'{settings.prize_follow} 💎\n'
             '✅ Чтобы получить бонус после того, как подписались - нажмите на кнопку «Проверить»',
             reply_markup=channel_kb())
@@ -49,8 +64,8 @@ async def check_follow_channel(callback: CallbackQuery):
                                                                  user_id=callback.from_user.id)
         if user_channel_status.status != 'left':
             settings = Settings.get()
-            await callback.message.edit_caption(caption=f'✅ Вы успешно получили бонус за подписку на канал в размере '
-                                             f'{settings.prize_follow} 💎')
+            await _edit_bonus_message(callback, f'✅ Вы успешно получили бонус за подписку на канал в размере '
+                                      f'{settings.prize_follow} 💎')
             user.prize_balance += settings.prize_follow
             user.channel_payed = True
             user.save()
@@ -201,8 +216,9 @@ async def _play_two_dice_double_game(
 
 @bonus_router.callback_query(F.data == 'bonuses_back')
 async def bonuses_back(callback: CallbackQuery):
-    await callback.message.edit_caption(
-        caption=bonus_page_caption(),
+    await _edit_bonus_message(
+        callback,
+        bonus_page_caption(),
         reply_markup=bonus_menu(),
         parse_mode='HTML',
     )
@@ -214,8 +230,9 @@ async def dice_game_rules(callback: CallbackQuery):
     k = int(getattr(settings, "dice_daily_attempts", 0) or 0)
     n = int(getattr(settings, "dice_double_reward", 0) or 0)
 
-    await callback.message.edit_caption(
-        caption=f'🎲 Игра в кости\n\n'
+    await _edit_bonus_message(
+        callback,
+        f'🎲 Игра в кости\n\n'
         f'При выпадении дубля Вы получите {n} 💎! Всего {k} попыток в день. Удачи!',
         reply_markup=dice_kb(emoji="🎲 Подбросить", call_data='dice_throw')
     )
@@ -244,8 +261,9 @@ async def casino_game_rules(callback: CallbackQuery):
     k = int(getattr(s, "casino_daily_attempts", 0) or 0)
     n = float(getattr(s, "casino_reward", 0) or 0)
 
-    await callback.message.edit_caption(
-        caption="🎰 777\n\n"
+    await _edit_bonus_message(
+        callback,
+        "🎰 777\n\n"
         f"Бонус {n} 💎 — только если выпали 3 одинаковых символа.\n"
         f"Всего {k} попыток в день. Удачи!",
         reply_markup=dice_kb(emoji='🎰 Играть', call_data='casino_throw')
@@ -275,8 +293,9 @@ async def bowling_game_rules(callback: CallbackQuery):
     k = int(getattr(s, "bowling_daily_attempts", 0) or 0)
     n = float(getattr(s, "bowling_reward", 0) or 0)
 
-    await callback.message.edit_caption(
-        caption="🎳 Боулинг\n\n"
+    await _edit_bonus_message(
+        callback,
+        "🎳 Боулинг\n\n"
         f"Бонус {n} 💎 — только если выбили страйк.\n"
         f"Всего {k} попыток в день. Удачи!",
         reply_markup=dice_kb(emoji='🎳 Играть', call_data='bowling_throw')
@@ -306,8 +325,9 @@ async def darts_game_rules(callback: CallbackQuery):
     k = int(getattr(s, "darts_daily_attempts", 0) or 0)
     n = float(getattr(s, "darts_reward", 0) or 0)
 
-    await callback.message.edit_caption(
-        caption="🎯 Дартс\n\n"
+    await _edit_bonus_message(
+        callback,
+        "🎯 Дартс\n\n"
         f"Бонус {n} 💎 — только если попали в «яблочко».\n"
         f"Всего {k} попыток в день. Удачи!",
         reply_markup=dice_kb(emoji='🎯 Играть', call_data='darts_throw')
@@ -334,8 +354,9 @@ async def darts_throw(callback: CallbackQuery):
 @bonus_router.callback_query(F.data == 'pnmvpn_trial')
 async def pnmvpn_trial_bonus(callback: CallbackQuery):
     settings = Settings.get()
-    await callback.message.edit_caption(
-        caption=f'💎 {settings.pnmvpn_trial_reward} за ₽1\n\n'
+    await _edit_bonus_message(
+        callback,
+        f'💎 {settings.pnmvpn_trial_reward} за ₽1\n\n'
         f'Оформи пробную подписку за 1 руб. и получи бонус {settings.pnmvpn_trial_reward} 💎.\n\n'
         'После успешного оформления бонус будет начислен автоматически ✅',
         reply_markup=pnmvpn_trial_kb(PNMVPN_BOT_USERNAME)
