@@ -5,6 +5,20 @@ from random import choice
 from config import DISPLAY_CURRENCY
 
 
+def big_ruffle_real_amount(ticket_count: int, price: int) -> int:
+    return max(0, int(ticket_count) * int(price))
+
+
+def big_ruffle_visible_amount(ticket_count: int, price: int, fake_amount: int) -> int:
+    return max(int(fake_amount), big_ruffle_real_amount(ticket_count, price))
+
+
+def big_ruffle_win_amount(ticket_count: int, price: int, profit: int) -> float:
+    amount = big_ruffle_real_amount(ticket_count, price)
+    win_amount = amount - (amount * int(profit) / 100)
+    return max(0, win_amount)
+
+
 async def start_ruffle(bot: Bot, ruffle: RufflesSettings):
     tickets = [i for i in Tickets.select().where(Tickets.ruffle_id == ruffle.id)]
     winner = choice(tickets)
@@ -38,14 +52,24 @@ async def start_ruffle(bot: Bot, ruffle: RufflesSettings):
 async def start_big_ruffle(bot: Bot):
     print('yes')
     tickets = [i for i in Tickets.select().where(Tickets.ruffle_id == 0)]
-    winner = choice(tickets)
-    user = Users.get_or_none(Users.user_id == winner.user_id)
-    while not user:
-        winner = choice(tickets)
-        user = Users.get_or_none(Users.user_id == winner.user_id)
     bl_settings: BigRuffleSettings = BigRuffleSettings.get()
-    amount = (len(tickets) * bl_settings.price) - 10
-    win_amount = amount - (amount * bl_settings.profit / 100)
+    if not tickets:
+        bl_settings.activity = False
+        bl_settings.save()
+        return
+    valid_tickets = []
+    for ticket in tickets:
+        ticket_user = Users.get_or_none(Users.user_id == ticket.user_id)
+        if ticket_user:
+            valid_tickets.append((ticket, ticket_user))
+    if not valid_tickets:
+        for ticket in tickets:
+            ticket.delete_instance()
+        bl_settings.activity = False
+        bl_settings.save()
+        return
+    winner, user = choice(valid_tickets)
+    win_amount = big_ruffle_win_amount(len(tickets), bl_settings.price, bl_settings.profit)
     user.balance += win_amount
     user.save()
     try:
@@ -66,5 +90,5 @@ async def start_big_ruffle(bot: Bot):
             notified.append(i.user_id)
         i.delete_instance()
     print(f'=========\n{notified}')
-    bl_settings.active = False
+    bl_settings.activity = False
     bl_settings.save()

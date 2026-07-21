@@ -53,9 +53,11 @@ async def big_ruffle_handle(message: Message, state: FSMContext):
         if user:
             settings: BigRuffleSettings = BigRuffleSettings.get()
             await message.answer(f'''🎰 Вы перешли в раздел «Мешок денег»
-    
-🧐 Здесь выигрыш зависит от количества участников. Больше участников – больше выигрыш! 
+
+🧐 Здесь выигрыш зависит от количества участников. Больше участников – больше выигрыш!
+
 🫵🏻 Ты можешь занять неограниченное количество слотов, чем больше, тем выше шанс на победу!
+
 💸 Победитель будет определён {settings.datetime} Удачи!''', reply_markup=big_ruffle())
         else:
             await message.answer('⛔ Возникла ошибка, введите /start для того, чтобы '

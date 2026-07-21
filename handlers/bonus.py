@@ -132,13 +132,13 @@ async def _play_game(
     if win_predicate(value):
         user.prize_balance += reward
         user.save()
-        await callback.message.edit_caption(
-            caption=f"✅ Вам начислен бонус {reward} 💎.\nОсталось попыток: {remaining}",
+        await callback.message.answer(
+            f"✅ Вам начислен бонус {reward} 💎.\nОсталось попыток: {remaining}",
             reply_markup=dice_kb(emoji, call_data_throw),
         )
     else:
-        await callback.message.edit_caption(
-            caption=f"❌ Попробуйте ещё.\nОсталось попыток: {remaining}",
+        await callback.message.answer(
+            f"❌ Попробуйте ещё.\nОсталось попыток: {remaining}",
             reply_markup=dice_kb(emoji, call_data_throw),
         )
 
@@ -188,13 +188,13 @@ async def _play_two_dice_double_game(
     if v1 == v2:
         user.prize_balance += reward
         user.save()
-        await callback.message.edit_caption(
-            caption=f"✅ Вам начислен бонус {reward} 💎.\nОсталось попыток: {remaining}",
+        await callback.message.answer(
+            f"✅ Вам начислен бонус {reward} 💎.\nОсталось попыток: {remaining}",
             reply_markup=dice_kb(emoji, call_data_throw),
         )
     else:
-        await callback.message.edit_caption(
-            caption=f"❌ Попробуй еще.\nОсталось попыток: {remaining}",
+        await callback.message.answer(
+            f"❌ Попробуй еще.\nОсталось попыток: {remaining}",
             reply_markup=dice_kb(emoji, call_data_throw),
         )
 

@@ -3,7 +3,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from utils.models import Users, Tickets, BigRuffleSettings
 from utils.keyboards import next_kb
-from utils.playout import start_ruffle
+from utils.playout import big_ruffle_visible_amount
 from utils.verification import has_deposit
 from config import DISPLAY_CURRENCY
 
@@ -21,13 +21,9 @@ async def big_ruffle_handle(callback: CallbackQuery):
 
 @big_ruffle_router.callback_query(F.data == 'big_ruffle amount')
 async def big_ruffle_handle(callback: CallbackQuery):
-    tickets = Tickets.select().where(Tickets.ruffle_id == 0)
+    tickets_count = Tickets.select().where(Tickets.ruffle_id == 0).count()
     big_ruffle: BigRuffleSettings = BigRuffleSettings.get()
-    amount = (len(tickets) * big_ruffle.price) - 10
-    if amount < big_ruffle.fake_amount:
-        show_amount = big_ruffle.fake_amount
-    else:
-        show_amount = amount - (amount * big_ruffle.profit / 100)
+    show_amount = big_ruffle_visible_amount(tickets_count, big_ruffle.price, big_ruffle.fake_amount)
     await callback.answer(f'👀 Сумма в мешке: {show_amount} {DISPLAY_CURRENCY}')
 
 
@@ -39,11 +35,10 @@ async def buy_big_ruffle_handle(callback: CallbackQuery):
     if not ruffle.activity:
         return await callback.message.edit_text('⛔ Этот розыгрыш на данный момент не доступен')
 
-    # NEW: deposit required
     if not has_deposit(callback.from_user.id):
         return await callback.message.edit_text(
-            'Этот розыгрыш доступен только для верифицированных пользователей. '
-            'Для верификации необходимо пополнить баланс 1 раз.'
+            '❌ Розыгрыш только для верифицированных пользователей. '
+            'Для верификации пополните баланс хотя бы 1 раз'
         )
 
     user_tickets = (Tickets.select().where(Tickets.user_id == callback.from_user.id).
@@ -63,4 +58,4 @@ async def buy_big_ruffle_handle(callback: CallbackQuery):
         user.can_withdraw_money = True
         user.save()
     else:
-        await callback.message.edit_text('❌ У Вас недостаточно средств для покупки данной лотереи')
+        await callback.message.edit_text('❌ У Вас недостаточно средств на основном балансе для участия')
