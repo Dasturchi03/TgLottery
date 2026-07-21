@@ -1,7 +1,7 @@
 import asyncio
 from datetime import datetime, date, timedelta
 from aiogram import F, Router
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, InputMediaPhoto
 from aiogram.fsm.context import FSMContext
 from utils.models import Users, Payments, Settings
 from aiogram.utils.deep_linking import create_start_link
@@ -13,14 +13,31 @@ from utils.daily_case_storage import get_extra_dice_attempts
 
 
 bonus_router = Router()
+BONUS_PHOTO_ID = 'AgACAgIAAxkBAAJqUmmkCVO4yemYBj_89Z3bR4M6DIl3AALNGWsbh1oQSbsELUsoe8v6AQADAgADeQADOgQ'
 
 
-async def _edit_bonus_message(callback: CallbackQuery, text: str, reply_markup=None, parse_mode: str | None = None):
+async def _edit_bonus_message(
+    callback: CallbackQuery,
+    text: str,
+    reply_markup=None,
+    parse_mode: str | None = None,
+    *,
+    as_photo: bool = False,
+):
     if callback.message.caption is not None:
         return await callback.message.edit_caption(
             caption=text,
             reply_markup=reply_markup,
             parse_mode=parse_mode,
+        )
+    if as_photo:
+        return await callback.message.edit_media(
+            media=InputMediaPhoto(
+                media=BONUS_PHOTO_ID,
+                caption=text,
+                parse_mode=parse_mode,
+            ),
+            reply_markup=reply_markup,
         )
     return await callback.message.edit_text(
         text,
@@ -221,6 +238,7 @@ async def bonuses_back(callback: CallbackQuery):
         bonus_page_caption(),
         reply_markup=bonus_menu(),
         parse_mode='HTML',
+        as_photo=True,
     )
 
 
